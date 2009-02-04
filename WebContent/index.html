@@ -1,0 +1,125 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/html1-strict.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>jnanoscheme</title>
+	<link rel='stylesheet' type='text/css' href='css/default.css'></link>
+	<script type="text/javascript" src="js/jquery.js" charset="utf-8"></script>
+	<script>
+	String.prototype.HTMLescape = (function() {
+		var tmp = document.createTextNode('');
+		var dummy = document.createElement('div');
+		dummy.appendChild(tmp);
+		return function() {
+			tmp.data = this;
+			return dummy.innerHTML;
+		};
+	})();
+	function escapeHTML(src) {
+		tmp.innerHTML = src;
+	    return tmp.innerHTML;
+	}
+	$(function() {
+		var cnt = 0;
+		$("#execute").click(function() {
+			var src = $("#src").val();
+			if ($.trim(src)) {
+				$.post("eval", "src=" + encodeURIComponent(src), function(res){
+					if (res && (typeof res == "object")) {
+						var parform ="<span class='parform'>" + 
+							++cnt + " 回目 " + 
+							res.callcnt + " times " +
+							res.exetime + " .msec</span>";
+						$("#out").prepend("<hr/>",
+							"<div>" + parform + "</div>",
+							"<div>" + res.stdout + "</div>",
+							"<div class='result'>result: " + res.result + "</div>");
+					} else {
+						$("#out").prepend("<hr/>","<div>Missing!-> " + res + "</div>")
+					}
+				}, "json");
+			}
+		});
+		$("#api").load("api.jsp");
+		$("#displist").click(function(){ $("#funclist").toggle() });
+		$("#clear").click(function(){ $("#src").val("") });
+	});
+	</script>
+	<script type="text/javascript">
+	var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+	document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+	</script>
+	<script type="text/javascript">
+	var pageTracker = _gat._getTracker("UA-3457066-2");
+	pageTracker._initData();
+	pageTracker._trackPageview();
+	</script>
+	<style type="text/css">
+	.parform {
+		border-bottom: dotted 1px;
+	}
+	.out {
+		clear: both;
+		font-size: small;
+	}
+	.result {
+		color: blue;
+	}
+	#src {
+		font-size: 9pt;
+	}
+	</style>
+</head>
+<body>
+<div>
+	<h1>JNanoScheme v0.1</h1>
+	<p>JNanoSchemeはJavaで実装されたSchemeの軽量なインタプリタです。<br>
+	テキストリエリアにソースを入力して、実行ボタンを押すと下に評価結果が出力されます。
+	実行ボタンを押すごとに環境がリセットされる為、関数を定義していく事はできません。
+	一回の実行に関数定義も全て含めて実行する必要があります。<br>
+	サーバ側での制限により現在は一回の実行で関数の適用回数が1000000回を超えると、処理を強制終了しています。
+	適用にはdefineなどの定義関数も全て含まれます。
+	また無限ループするような再帰関数などは内部のJavaのスタックがオーバーフローする為、かなり早い段階でエラーを返します。
+	</p>
+	<div>
+		<input type="button" id="execute" value="実行">
+		<input type="button" id="clear" value="クリア">
+		<input type="button" id="displist" value="関数リスト">
+	</div>
+	
+	<div id="funclist" style="display:none;">
+		<h4>実装されている組み込み関数一覧</h4>
+		<div id="api"></div>
+		<!-- 
+		<dl>
+			<dt>特別式</dt>
+			<dd>define、if、lambda、quote</dd>
+			<dt>関数式（Javaで実装）※１回の関数の適用で回数を１回とカウント</dt>
+			<dd>car cadr caddr cadddr 
+				cdr cddr cdddr cddddr 
+				cons and or begin 
+				newline display set! 
+				+　-　*　/　&lt; &gt; expt
+				number?　string?　null?　symbol?
+				list　map</dd>
+			<dt>関数式（Schemeで実装）※１回の関数適用でカウントされる回数は実装による</dt>
+			<dd>&lt;= &gt;= fib</dd>
+		</dl>
+		 -->
+	</div>
+	
+	<textarea id="src" name="src" rows="14" cols="80">(display (fib 1))(newline)
+(display (fib 2))(newline)
+(display (fib 3))(newline)
+(display (fib 4))(newline)
+(display (fib 5))(newline)
+(display (fib 6))(newline)
+(display (fib 7))(newline)
+(display (fib 8))(newline)</textarea>
+	
+	<div id="out"></div>
+	<hr>
+</div>
+</body>
+</html>
